@@ -8,6 +8,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner"
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import {
     Card,
     CardContent,
@@ -88,24 +89,6 @@ export function RegisterForm() {
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit)}>
                             <div className="grid gap-6">
-                               <div className="flex flex-col gap-4">
-                                <Button 
-                                variant = "outline"
-                                className="w-full"
-                                type="button"
-                                disabled={isPending}
-                                >
-                                Continue with Google
-                                </Button>
-                                <Button 
-                                variant = "outline"
-                                className="w-full"
-                                type="button"
-                                disabled={isPending}
-                                >
-                                Continue with GitHub
-                                </Button>
-                                </div> 
                                 <div className="grid gap-6">
                                     <FormField 
                                         control={form.control}
@@ -158,9 +141,45 @@ export function RegisterForm() {
                                         </FormItem>
                                     )}
                                     />
-                                    <Button>
+                                    <Button type="submit" disabled={isPending}>
                                         Sign Up
-                                    </Button>
+                                    </Button>                                                                        <div className="flex items-center gap-3 py-1">
+                                        <Separator className="flex-1 bg-zinc-700" />
+                                        <span className="text-xs uppercase tracking-[0.2em]">
+                                            OR
+                                        </span>
+                                        <Separator className="flex-1 bg-zinc-700" />
+                                    </div>
+                                <div className="flex flex-col gap-4">
+                                <Button 
+                                variant = "outline"
+                                className="w-full"
+                                type="button"
+                                disabled={isPending}
+                                >
+                                    <Image
+                                        src="/logos/google.svg"
+                                        alt="Google Icon"
+                                        width={20}
+                                        height={20}
+                                    />
+                                Continue with Google
+                                </Button>
+                                <Button 
+                                variant = "outline"
+                                className="w-full"
+                                type="button"
+                                disabled={isPending}
+                                >
+                                    <Image
+                                        src="/logos/github.svg"
+                                        alt="GitHub Icon"
+                                        width={20}
+                                        height={20}
+                                    />
+                                    Continue with GitHub
+                                </Button>
+                                </div> 
                                 </div>
                                 <div className="text-center text-sm"> 
                                     Already have an account?{" "}
@@ -178,6 +197,3 @@ export function RegisterForm() {
     )
 
 }
-
-
-
