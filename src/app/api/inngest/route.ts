@@ -1,9 +1,10 @@
 // src/app/api/inngest/route.ts
 import { serve } from "inngest/next";
 import { inngest } from "../../../inngest/client";
-import { processTask } from "../../../inngest/functions";
+import { executeAi} from "../../../inngest/functions";
+import { exec } from "child_process";
 
 export const { GET, POST, PUT } = serve({
   client: inngest,
-  functions: [processTask],
+  functions: [executeAi],
 });
