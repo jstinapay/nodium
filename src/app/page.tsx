@@ -11,6 +11,12 @@ const Page = () => {
   const queryClient = useQueryClient();
   const workflowsQuery = useQuery(trpc.getWorkflows.queryOptions());
 
+  const testAi = useMutation(trpc.testAi.mutationOptions({
+    onSuccess: async (data) => {
+      toast.success("AI job queued");
+    }
+  }));
+
   const create = useMutation(
     trpc.createWorkflow.mutationOptions({
       onSuccess: async () => {
@@ -50,6 +56,13 @@ const Page = () => {
                 {create.isPending ? "Queuing workflow..." : "Create Workflow"}
               </Button>
               <LogoutButton />
+              <Button
+                disabled={testAi.isPending}
+                onClick={() => testAi.mutate()}
+                className="h-11 rounded-xl px-5"
+              >
+                {testAi.isPending ? "Testing AI..." : "Test AI"}
+              </Button>
             </div>
           </div>
         </section>
