@@ -143,7 +143,8 @@ export function RegisterForm() {
                                     />
                                     <Button type="submit" disabled={isPending}>
                                         Sign Up
-                                    </Button>                                                                        <div className="flex items-center gap-3 py-1">
+                                    </Button>                                                                        
+                                    <div className="flex items-center gap-3 py-1">
                                         <Separator className="flex-1 bg-zinc-700" />
                                         <span className="text-xs uppercase tracking-[0.2em]">
                                             OR
