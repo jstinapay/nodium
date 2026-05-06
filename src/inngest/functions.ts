@@ -23,6 +23,12 @@ export const executeAi = inngest.createFunction(
         model: google('gemini-2.5-flash'),
         system: "You are a helpful assistant.",
         prompt: "What is 2+2?",
+        experimental_telemetry: {
+          isEnabled: true,
+          functionId: "gemini-2.5-flash",
+          recordInputs: true,
+          recordOutputs: true,
+        },
       }
     );
 
