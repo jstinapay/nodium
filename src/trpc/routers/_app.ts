@@ -1,12 +1,12 @@
 import { inngest } from '@/inngest/client';
-import { createTRPCRouter, protectedProcedure } from '../init';
+import { createTRPCRouter, protectedProcedure, premiumProcedure } from '../init';
 import prisma from '@/lib/db';
 import { google } from '@ai-sdk/google';
 import { generateText } from 'ai';
 import { text } from 'stream/consumers';
 
 export const appRouter = createTRPCRouter({
-  testAi: protectedProcedure.mutation(async () => {
+  testAi: premiumProcedure.mutation(async () => {
     await inngest.send({
       name: "execute/ai",
     });
