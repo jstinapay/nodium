@@ -12,6 +12,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useQueryClient } from '@tanstack/react-query';
 import {
     Sidebar,
     SidebarContent,
@@ -54,6 +55,7 @@ export const AppSidebar = () => {
     const router = useRouter();
     const pathname = usePathname();
     const { hasActiveSubscription, isLoading } = useHasActiveSubscription();   
+    const queryClient = useQueryClient();
 
 
     return (
@@ -127,13 +129,14 @@ export const AppSidebar = () => {
                             <SidebarMenuButton 
                                 tooltip="Sign Out"
                                 className="gap-x-4 h-10 px-4"
-                                onClick={()=> authClient.signOut({
-                                    fetchOptions: {
-                                        onSuccess: () => {
-                                            router.push("/login");
+                                onClick={async ()=> {
+                                    try { queryClient.invalidateQueries({ queryKey: ["subscription"] }); } catch {}
+                                    authClient.signOut({
+                                        fetchOptions: {
+                                            onSuccess: () => { router.push("/login"); }
                                         }
-                                    }
-                                })}
+                                    })
+                                }}
                             >
                                 <LogOutIcon className="size-4" />
                                 <span>Sign Out</span>

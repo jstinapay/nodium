@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner"
+import { useQueryClient } from '@tanstack/react-query';
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import {
@@ -39,6 +40,7 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 export function LoginForm() {
     const router = useRouter();
+    const queryClient = useQueryClient();
 
     const form = useForm({
         resolver: zodResolver(loginSchema),
@@ -55,7 +57,8 @@ export function LoginForm() {
         },
         { 
             onSuccess() { 
-                router.push("/");
+                queryClient.invalidateQueries({ queryKey: ["subscription"] });
+                router.push("/workflows");
             },
             onError: (ctx) => {
                 toast.error(ctx.error.message);
