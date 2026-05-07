@@ -64,7 +64,7 @@ export const AppSidebar = () => {
                 <SidebarMenuItem>
                     <SidebarMenuButton asChild className ="gap-x-2 h-10 px-4">
                         <Link href="/" prefetch>
-                            <Image src="logos/logo.svg" alt="nodium" width={30} height={30} />
+                            <Image src="/logos/logo.svg" alt="nodium" width={30} height={30} />
                             <span className="font-semibold text-sm">Nodium</span>
                         </Link>
                     </SidebarMenuButton>
