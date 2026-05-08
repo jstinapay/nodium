@@ -20,10 +20,13 @@ import {
     Panel,
     
 } from "@xyflow/react";
+import { PanOnScrollMode } from "@xyflow/system";
 import '@xyflow/react/dist/style.css';
 import { nodeComponents } from "@/config/node-components";
 import { AddNodeButton } from "./add-node-button";
   import { useTheme } from "next-themes";
+import { useSetAtom } from "jotai";
+import { editorAtom } from "../store/atoms";
 
 export const EditorLoading = () => {
     return <LoadingView message = "Loading editor..." />;
@@ -34,10 +37,12 @@ export const EditorError = () => {
 }
 
 export const Editor = ({ workflowId }: { workflowId: string }) => {
-    const { data: workflow } = useSuspenseWorkflow(workflowId);
+  const { data: workflow } = useSuspenseWorkflow(workflowId);
+  
   const { theme } = useTheme();
   const colorMode = theme === "light" || theme === "dark" ? theme : "system";
 
+  const setEditor = useSetAtom(editorAtom);
       const [nodes, setNodes] = useState<Node[]>(workflow.nodes);
       const [edges, setEdges] = useState<Edge[]>(workflow.edges);
 
@@ -72,6 +77,7 @@ export const Editor = ({ workflowId }: { workflowId: string }) => {
         proOptions={{
             hideAttribution: true,
         }}
+        onInit={setEditor}
       >
         <Background gap={24} size={1} />
         <Controls className="rounded-xl border bg-background/90 shadow-sm backdrop-blur" />
