@@ -13,7 +13,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useSuspenseWorkflow, useUpdateWorkflowName } from "@/features/workflows/hooks/use-workflows";
+import { useSuspenseWorkflow, useUpdateWorkflow, useUpdateWorkflowName } from "@/features/workflows/hooks/use-workflows";
+import { editorAtom } from "../store/atoms";
+import { useAtomValue } from "jotai";
 
 export const EditorNameInput = ({ workflowId }: { workflowId: string }) => {
     const { data: workflow } = useSuspenseWorkflow(workflowId);
@@ -95,16 +97,31 @@ export const EditorBreadcrumbs = ({ workflowId }: { workflowId: string }) => {
 }
 
 export const EditorSaveButton = ({ workflowId }: { workflowId: string }) => {
-        return (
-        <div className="ml-auto">
-            <Button size="sm" onClick={() => {}} disabled={false}>
-                <SaveIcon className="size-4"/>
-                Save
-            </Button>
+            const editor = useAtomValue(editorAtom);
+            const saveWorkflow = useUpdateWorkflow();
 
-        </div>
-    )
-}
+            const handleSave = () => {
+                if (!editor) return;
+
+                const nodes = editor.getNodes();
+                const edges = editor.getEdges();
+
+                saveWorkflow.mutate({ 
+                    id: workflowId, 
+                    nodes, 
+                    edges 
+                });
+            }
+            return (
+            <div className="ml-auto">
+                <Button size="sm" onClick={handleSave} disabled={saveWorkflow.isPending}>
+                    <SaveIcon className="size-4"/>
+                    Save
+                </Button>
+
+            </div>
+        )
+    }
 
 export const EditorHeader = ({ workflowId }: { workflowId: string }) => {
     return (
