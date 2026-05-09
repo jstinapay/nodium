@@ -1,53 +1,107 @@
-import type { NodeExecutor } from "@/features/executions/types";
 import { NonRetriableError } from "inngest";
 import ky, { type Options as KyOptions } from "ky";
+import {
+  getErrorMessage,
+  publishNodeStatus,
+} from "@/features/executions/lib/node-status-events";
+import { DEFAULT_HTTP_REQUEST_VARIABLE_NAME } from "@/features/executions/lib/node-variable-constants";
+import {
+  assertValidVariableName,
+  normalizeVariableName,
+} from "@/features/executions/lib/node-variables";
+import { renderTemplate } from "@/features/executions/lib/template";
+import type { NodeExecutor } from "@/features/executions/types";
 
 type HttpRequestData = {
   endpoint?: string;
   method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   body?: string;
+  variableName?: string;
 };
 
 export const httpRequestExecutor: NodeExecutor<HttpRequestData> = async ({
   data,
   nodeId,
+  executionId,
   context,
   step,
 }) => {
-  // TODO: Publish "loading" state for http request
+  const variableName = normalizeVariableName(
+    data.variableName,
+    DEFAULT_HTTP_REQUEST_VARIABLE_NAME,
+  );
+  assertValidVariableName(variableName);
+
+  await publishNodeStatus({
+    executionId,
+    step,
+    nodeId,
+    status: "loading",
+  });
 
   if (!data.endpoint) {
-    // TODO: Publish "error" state for http request
+    await publishNodeStatus({
+      executionId,
+      step,
+      nodeId,
+      status: "error",
+      message: "HTTP Request node: No endpoint configured",
+    });
     throw new NonRetriableError("HTTP Request node: No endpoint configured");
   }
 
-  const result = await step.run("http-request", async () => {
-    const endpoint = data.endpoint!;
-    const method = data.method || "GET";
+  const configuredEndpoint = data.endpoint;
 
-    const options: KyOptions = { method };
+  try {
+    const result = await step.run("http-request", async () => {
+      const endpoint = renderTemplate(configuredEndpoint, context);
+      const method = data.method || "GET";
 
-    if (["POST", "PUT", "PATCH"].includes(method)) {
-      options.body = data.body;
-    }
+      const options: KyOptions = { method };
 
-    const response = await ky(endpoint, options);
-    const contentType = response.headers.get("content-type");
-    const responseData = contentType?.includes("application/json")
-      ? await response.json()
-      : await response.text();
+      if (["POST", "PUT", "PATCH"].includes(method)) {
+        options.body = renderTemplate(data.body || "", context);
+        options.headers = {
+          "Content-Type": "application/json",
+        };
+      }
 
-    return {
-      ...context,
-      httpResponse: {
+      const response = await ky(endpoint, options);
+      const contentType = response.headers.get("content-type");
+      const responseData = contentType?.includes("application/json")
+        ? await response.json()
+        : await response.text();
+
+      const output = {
         status: response.status,
         statusText: response.statusText,
         data: responseData,
-      }
-    }
-  });
+      };
 
-  // TODO: Publish "success" state for http request
+      return {
+        ...context,
+        [variableName]: output,
+        httpResponse: output,
+      };
+    });
 
-  return result;
+    await publishNodeStatus({
+      executionId,
+      step,
+      nodeId,
+      status: "success",
+      output: result[variableName],
+    });
+
+    return result;
+  } catch (error) {
+    await publishNodeStatus({
+      executionId,
+      step,
+      nodeId,
+      status: "error",
+      message: getErrorMessage(error),
+    });
+    throw error;
+  }
 };

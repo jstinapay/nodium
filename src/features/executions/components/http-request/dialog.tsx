@@ -1,5 +1,10 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect, useMemo } from "react";
+import { useForm } from "react-hook-form";
+import z from "zod";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -8,7 +13,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import z from "zod";
 import {
   Form,
   FormControl,
@@ -27,12 +31,19 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { Button } from "@/components/ui/button";
-import { useEffect } from "react";
+import {
+  DEFAULT_HTTP_REQUEST_VARIABLE_NAME,
+  VARIABLE_NAME_PATTERN,
+} from "@/features/executions/lib/node-variable-constants";
 
 const formSchema = z.object({
+  variableName: z
+    .string()
+    .min(1, { message: "Variable name is required" })
+    .regex(VARIABLE_NAME_PATTERN, {
+      message:
+        "Use letters, numbers, and underscores, and start with a letter or underscore",
+    }),
   endpoint: z.url({ message: "Please enter a valid URL" }),
   method: z.enum(["GET", "POST", "PUT", "DELETE", "PATCH"]),
   body: z.string().optional(),
@@ -46,6 +57,7 @@ interface Props {
   onOpenChange: (open: boolean) => void;
   onSubmit: (values: HttpRequestFormValues) => void;
   defaultValues?: Partial<HttpRequestFormValues>;
+  reservedVariableNames?: string[];
 }
 
 export const HttpRequestDialog = ({
@@ -53,10 +65,25 @@ export const HttpRequestDialog = ({
   onOpenChange,
   onSubmit,
   defaultValues = {},
+  reservedVariableNames = [],
 }: Props) => {
+  const schema = useMemo(
+    () =>
+      formSchema.refine(
+        (values) => !reservedVariableNames.includes(values.variableName),
+        {
+          path: ["variableName"],
+          message: "Variable name is already used by another node",
+        },
+      ),
+    [reservedVariableNames],
+  );
+
   const form = useForm<HttpRequestFormValues>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(schema),
     defaultValues: {
+      variableName:
+        defaultValues.variableName || DEFAULT_HTTP_REQUEST_VARIABLE_NAME,
       endpoint: defaultValues.endpoint || "",
       method: defaultValues.method || "GET",
       body: defaultValues.body || "",
@@ -69,6 +96,8 @@ export const HttpRequestDialog = ({
   useEffect(() => {
     if (open) {
       form.reset({
+        variableName:
+          defaultValues.variableName || DEFAULT_HTTP_REQUEST_VARIABLE_NAME,
         endpoint: defaultValues.endpoint || "",
         method: defaultValues.method || "GET",
         body: defaultValues.body || "",
@@ -96,6 +125,24 @@ export const HttpRequestDialog = ({
             onSubmit={form.handleSubmit(handleSubmit)}
             className="space-y-8 mt-4"
           >
+            <FormField
+              control={form.control}
+              name="variableName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Variable Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="httpRequest" {...field} />
+                  </FormControl>
+                  <FormDescription>
+                    Use this name in templates, for example{" "}
+                    {"{{httpRequest.data.id}}"}.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             <FormField
               control={form.control}
               name="method"
