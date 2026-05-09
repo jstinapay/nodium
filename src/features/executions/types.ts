@@ -7,10 +7,10 @@ export type StepTools = GetStepTools<Inngest.Any>;
 export interface NodeExecutorParams<TData = Record<string, unknown>> {
   data: TData;
   nodeId: string;
+  executionId: string;
   context: WorkflowContext;
   step: StepTools;
-  // publish: TODO Add realtime later
-};
+}
 
 export type NodeExecutor<TData = Record<string, unknown>> = (
   params: NodeExecutorParams<TData>,

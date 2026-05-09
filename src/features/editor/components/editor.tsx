@@ -1,32 +1,31 @@
 "use client";
 
+import {
+  addEdge,
+  applyEdgeChanges,
+  applyNodeChanges,
+  Background,
+  type Connection,
+  Controls,
+  type Edge,
+  type EdgeChange,
+  MiniMap,
+  type Node,
+  type NodeChange,
+  Panel,
+  ReactFlow,
+} from "@xyflow/react";
+import { useCallback, useMemo, useState } from "react";
 import { ErrorView, LoadingView } from "@/components/entity-components";
 import { useSuspenseWorkflow } from "@/features/workflows/hooks/use-workflows";
-import { useState, useCallback, useMemo } from "react";
-import {
-  ReactFlow,
-  applyNodeChanges,
-  applyEdgeChanges,
-  addEdge,
-  type Node,
-  type Edge,
-  type NodeChange,
-  type EdgeChange,
-  type Connection,
-  type ColorMode,
-  Background,
-  Controls,
-  MiniMap,
-  Panel,
-} from "@xyflow/react";
-import { PanOnScrollMode } from "@xyflow/system";
 import "@xyflow/react/dist/style.css";
-import { nodeComponents } from "@/config/node-components";
-import { AddNodeButton } from "./add-node-button";
+import { useAtomValue, useSetAtom } from "jotai";
 import { useTheme } from "next-themes";
-import { useSetAtom } from "jotai";
-import { editorAtom } from "../store/atoms";
+import { nodeComponents } from "@/config/node-components";
 import { NodeType } from "@/generated/prisma/browser";
+import { useWorkflowNodeStatusSubscription } from "../hooks/use-node-status";
+import { activeExecutionIdAtom, editorAtom } from "../store/atoms";
+import { AddNodeButton } from "./add-node-button";
 import { ExecuteWorkflowButton } from "./execute-workflow-button";
 
 export const EditorLoading = () => {
@@ -44,6 +43,8 @@ export const Editor = ({ workflowId }: { workflowId: string }) => {
   const colorMode = theme === "light" || theme === "dark" ? theme : "system";
 
   const setEditor = useSetAtom(editorAtom);
+  const activeExecutionId = useAtomValue(activeExecutionIdAtom);
+  useWorkflowNodeStatusSubscription(activeExecutionId);
   const [nodes, setNodes] = useState<Node[]>(workflow.nodes);
   const [edges, setEdges] = useState<Edge[]>(workflow.edges);
 

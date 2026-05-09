@@ -1,20 +1,25 @@
-import { topologicalSort } from "./utils";
 import { NonRetriableError } from "inngest";
-import { inngest } from "./client";
-import prisma from "@/lib/db";
-import { NodeType } from "@/generated/prisma/enums";
 import { getExecutor } from "@/features/executions/lib/executor-registry";
+import { assertUniqueVariableNames } from "@/features/executions/lib/node-variables";
+import type { NodeType } from "@/generated/prisma/enums";
+import prisma from "@/lib/db";
+import { inngest } from "./client";
+import { topologicalSort } from "./utils";
 
 export const executeWorkflow = inngest.createFunction(
   {
     id: "execute-workflow",
     triggers: [{ event: "workflows/execute.workflow" }],
   },
-  async ({ event, step }: { event: any; step: any }) => {
+  async ({ event, step }) => {
     const workflowId = event.data?.workflowId;
+    const executionId = event.data?.executionId;
 
     if (!workflowId) {
       throw new NonRetriableError("Workflow ID is required");
+    }
+    if (!executionId) {
+      throw new NonRetriableError("Execution ID is required");
     }
 
     const sortedNodes = await step.run("prepare-workflow", async () => {
@@ -28,6 +33,8 @@ export const executeWorkflow = inngest.createFunction(
         },
       });
 
+      assertUniqueVariableNames(workflow.nodes);
+
       return topologicalSort(workflow.nodes, workflow.connections);
     });
     // Initialize context with any initial data from the trigger
@@ -39,13 +46,14 @@ export const executeWorkflow = inngest.createFunction(
       context = await executor({
         data: node.data as Record<string, unknown>,
         nodeId: node.id,
+        executionId,
         context,
         step,
       });
     }
-    return { 
+    return {
       workflowId,
       result: context,
-     };
+    };
   },
 );
