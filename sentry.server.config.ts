@@ -9,3 +9,5 @@ Sentry.init({
   // see https://docs.sentry.io/platforms/javascript/data-management/data-collected/ for more info
   sendDefaultPii: true,
 });
+
+export {};
