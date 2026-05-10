@@ -8,6 +8,7 @@ import { HttpRequestFormValues, HttpRequestDialog } from "./dialog";
 import { Form } from "radix-ui";
  
 type HttpRequestNodeData = {
+    variableName?: string; // Name of the variable to store the response in context
     endpoint?: string;
     method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
     body?: string;
