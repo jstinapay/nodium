@@ -1,7 +1,7 @@
 import { Inngest } from "inngest";
+import { realtimeMiddleware} from "@inngest/realtime/middleware"
 
 export const inngest = new Inngest({
   id: "n2e",
-  retryAttempts: 5,
-  retryDelayMs: 100,
+  middleware: [realtimeMiddleware()]
 });
