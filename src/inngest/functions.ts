@@ -1,25 +1,32 @@
-import { topologicalSort } from "./utils";
 import { NonRetriableError } from "inngest";
 import { inngest } from "./client";
 import prisma from "@/lib/db";
-import { NodeType } from "@/generated/prisma/enums";
+import { topologicalSort } from "./utils";
+import { NodeType } from "@/generated/prisma/browser";
 import { getExecutor } from "@/features/executions/lib/executor-registry";
+import { httpRequestChannel } from "./channels/http-request";
+import { manualTriggerChannel } from "./channels/manual-trigger";
 
 export const executeWorkflow = inngest.createFunction(
-  {
+  { 
     id: "execute-workflow",
-    triggers: [{ event: "workflows/execute.workflow" }],
+    retries: 0, // TODO: REMOVE IN PRODUCTION
   },
-  async ({ event, step }: { event: any; step: any }) => {
-    const workflowId = event.data?.workflowId;
+  { 
+    event: "workflows/execute.workflow",
+    channels: [
+      httpRequestChannel(),
+      manualTriggerChannel(),
+    ],
+  },
+  async ({ event, step, publish }) => {
+    const workflowId = event.data.workflowId;
 
     if (!workflowId) {
-      throw new NonRetriableError("Workflow ID is required");
+      throw new NonRetriableError("Workflow ID is missing");
     }
 
     const sortedNodes = await step.run("prepare-workflow", async () => {
-      // Fetch workflow data from your database using the workflowId
-      // For example, using Prisma:
       const workflow = await prisma.workflow.findUniqueOrThrow({
         where: { id: workflowId },
         include: {
@@ -30,6 +37,7 @@ export const executeWorkflow = inngest.createFunction(
 
       return topologicalSort(workflow.nodes, workflow.connections);
     });
+
     // Initialize context with any initial data from the trigger
     let context = event.data.initialData || {};
 
@@ -41,11 +49,13 @@ export const executeWorkflow = inngest.createFunction(
         nodeId: node.id,
         context,
         step,
+        publish,
       });
     }
-    return { 
+
+    return {
       workflowId,
       result: context,
-     };
+    };
   },
 );
