@@ -16,6 +16,7 @@ import Link from "next/link";
 import { useSuspenseWorkflow, useUpdateWorkflow, useUpdateWorkflowName } from "@/features/workflows/hooks/use-workflows";
 import { editorAtom } from "../store/atoms";
 import { useAtomValue } from "jotai";
+import { ModeToggle } from "@/components/theme-toggle";
 
 export const EditorNameInput = ({ workflowId }: { workflowId: string }) => {
     const { data: workflow } = useSuspenseWorkflow(workflowId);
@@ -132,6 +133,7 @@ export const EditorHeader = ({ workflowId }: { workflowId: string }) => {
                 <EditorBreadcrumbs workflowId={workflowId} />
                 <div className="flex items-center gap-2">
                     <EditorSaveButton workflowId={workflowId} />
+                    <ModeToggle />
                 </div>
             </div>
         </header>

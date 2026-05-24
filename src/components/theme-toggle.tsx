@@ -1,59 +1,40 @@
-"use client";
+"use client"
 
-import { MonitorIcon, MoonStarIcon, SunMediumIcon } from "lucide-react";
-import { useTheme } from "next-themes";
+import * as React from "react"
+import { Moon, Sun } from "lucide-react"
+import { useTheme } from "next-themes"
 
+import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
+  DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { SidebarMenuButton } from "@/components/ui/sidebar";
+} from "@/components/ui/dropdown-menu"
 
-const themeOptions = [
-  { value: "light", label: "Light", icon: SunMediumIcon },
-  { value: "dark", label: "Dark", icon: MoonStarIcon },
-  { value: "system", label: "System", icon: MonitorIcon },
-] as const;
-
-export function ThemeToggle() {
-  const { theme, setTheme } = useTheme();
-  const currentTheme = theme ?? "system";
-  const activeOption =
-    themeOptions.find((option) => option.value === currentTheme) ??
-    themeOptions[2];
-  const ActiveIcon = activeOption.icon;
+export function ModeToggle() {
+  const { setTheme } = useTheme()
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <SidebarMenuButton
-          tooltip={activeOption.label}
-          className="gap-x-4 h-10 px-4"
-        >
-          <ActiveIcon className="size-4" />
-          <span>{activeOption.label}</span>
-        </SidebarMenuButton>
+        <Button variant="outline" size="icon">
+          <Sun className="h-[1.2rem] w-[1.2rem] scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90" />
+          <Moon className="absolute h-[1.2rem] w-[1.2rem] scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0" />
+          <span className="sr-only">Toggle theme</span>
+        </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="min-w-40">
-        <DropdownMenuRadioGroup
-          value={currentTheme}
-          onValueChange={(value) => setTheme(value)}
-        >
-          {themeOptions.map((option) => {
-            const OptionIcon = option.icon;
-
-            return (
-              <DropdownMenuRadioItem key={option.value} value={option.value}>
-                <OptionIcon className="size-4" />
-                {option.label}
-              </DropdownMenuRadioItem>
-            );
-          })}
-        </DropdownMenuRadioGroup>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem onClick={() => setTheme("light")}>
+          Light
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setTheme("dark")}>
+          Dark
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setTheme("system")}>
+          System
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
-  );
+  )
 }
