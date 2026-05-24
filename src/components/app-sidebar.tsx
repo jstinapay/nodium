@@ -24,7 +24,6 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { authClient } from "@/lib/auth-client";
 import { useHasActiveSubscription } from "@/features/subscriptions/hooks/use-subscription";
 
@@ -103,7 +102,6 @@ export const AppSidebar = () => {
                 <SidebarFooter>
                     <SidebarMenu>
                         <SidebarMenuItem>
-                            <ThemeToggle />
                         </SidebarMenuItem>
                         {!isLoading && !hasActiveSubscription && (
                         <SidebarMenuItem>
