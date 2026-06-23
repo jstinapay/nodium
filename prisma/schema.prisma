@@ -93,6 +93,10 @@ enum NodeType {
   MANUAL_TRIGGER
   HTTP_REQUEST
   GOOGLE_FORM_TRIGGER
+  STRIPE_TRIGGER
+  CLAUDE
+  GEMINI
+  GPT
 }
 model Node {
   id String @id @default(cuid())
